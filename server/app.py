@@ -17,10 +17,30 @@ db.init_app(app)
 api = Api(app)
 
 class Plants(Resource):
-    pass
+    def get(self):
+        return jsonify([plant.to_dict() for plant in Plant.query.all()])
+    
+    def post(self):
+        try:
+            image = request.json.get("image")
+            name = request.json.get("name")
+            price = request.json.get("price")
+            plant = Plant(image=image,name=name,price=price)
+            db.session.add(plant)
+            db.session.commit()
+        except Exception as e:
+            return {"error":e.args}
+
+api.add_resource(Plants, '/plants')
 
 class PlantByID(Resource):
-    pass
+    def get(self,id):
+        try:
+            return jsonify(db.session.get(Plant, id).to_dict())
+        except Exception as e:
+            return {"error":e.args}
+    
+api.add_resource(PlantByID, '/plants/<int:id>')
         
 
 if __name__ == '__main__':
